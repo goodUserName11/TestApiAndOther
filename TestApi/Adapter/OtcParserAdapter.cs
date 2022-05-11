@@ -5,11 +5,9 @@ namespace TestApi.Adapter
 {
     public class OtcParserAdapter : AbstractSearchAdapter
     {
-        public override async Task<List<Supplier>> Find(string product)
+        public override async Task<List<Supplier>> Find(string okpd)
         {
-            OtcParser otcParcer = new OtcParser();
-
-            return await otcParcer.Parse(product);
+            return await ParserContainer.OtcParser.Parse(okpd);
         }
     }
 }

@@ -1,7 +1,7 @@
-﻿
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using TestApi.Entity;
 using TestApi.Adapter;
+using TestApi.Parser;
 
 namespace TestApi.Controllers
 {
@@ -10,13 +10,16 @@ namespace TestApi.Controllers
     public class SearchController : ControllerBase
     {
         [HttpGet]
-        public async Task<ActionResult<List<Supplier>>> Get([FromQuery]string? searchQuerry = null)
+        public async Task<ActionResult<List<Supplier>>> Get([FromQuery]string? okpd2 = null)
         {
-            //OtcParcerAdapter otc = new OtcParcerAdapter();
+            List<Supplier> list = new();
 
-            //var list = await otc.Find(searchQuerry);
+            if(okpd2 is null)
+                return NotFound();
 
+            //list.AddRange(await AdapterContainer.OtcAdapter.Find(okpd2));
 
+            list.AddRange(await new OtherParcer().Parse(okpd2));
 
             return BadRequest();
         }

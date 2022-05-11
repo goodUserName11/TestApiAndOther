@@ -4,6 +4,6 @@ namespace TestApi.Adapter
 {
     public abstract class AbstractSearchAdapter : AbstractAdapter
     {
-        public abstract Task<List<Supplier>> Find(string product);
+        public abstract Task<List<Supplier>> Find(string okpd2);
     }
 }

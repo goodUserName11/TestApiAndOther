@@ -30,15 +30,11 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-//using (TestApi.Data.SearchAndRangeContext dbContext = new TestApi.Data.SearchAndRangeContext())
+//using (TestApi.Data.SearchAndRangeContext dbContext = new())
 //{
 //    if (dbContext.Okpd2s.Count() == 0)
 //    {
-//        TestApi.Adapter.Okpd2ParserAdapter okpdAdapter = new TestApi.Adapter.Okpd2ParserAdapter();
-
-//        okpdAdapter.AddToDb();
-
-//        Console.WriteLine("Okpd2 added");
+//        TestApi.Adapter.AdapterContainer.Okpd2Adapter.AddToDb();
 //    }
 //}
 

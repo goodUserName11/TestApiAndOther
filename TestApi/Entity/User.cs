@@ -6,20 +6,35 @@ namespace TestApi.Entity
     [Table("User")]
     public class User
     {
-        //public User(string login, string password, bool isAdmin)
-        //{
-        //    Login = login;
-        //    Password = password;
-        //    IsAdmin = isAdmin;
-        //}
+        public User()
+        {
+
+        }
+
+        public User(byte[] password, string? name, string? surname, string? patronimic, 
+            string email, string phone, Guid role, Guid? registratedBy, string companyInn)
+        {
+            Password = password;
+            Name = name;
+            Surname = surname;
+            Patronimic = patronimic;
+            Email = email;
+            Phone = phone;
+            Role = role;
+            RegistratedBy = registratedBy;
+            CompanyInn = companyInn;
+        }
 
         [Key]
         public Guid Id { get; }
-        public string Login { get; set; }
         public byte[] Password { get; set; }
         public string? Name { get; set; }
         public string? Surname { get; set; }
         public string? Patronimic { get; set; }
-        public bool IsAdmin { get; set; }
+        public string Email { get; set; }
+        public string Phone { get; set; }
+        public Guid Role { get; set; }
+        public Guid? RegistratedBy { get; set; }
+        public string CompanyInn { get; set; }
     }
 }

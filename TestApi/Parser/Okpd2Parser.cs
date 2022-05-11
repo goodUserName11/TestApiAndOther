@@ -5,8 +5,6 @@ using AngleSharp.Html.Dom;
 using AngleSharp.Io;
 using TestApi.Data;
 using TestApi.Entity;
-//using AngleSharp.Js;
-//using AngleSharp.Js.Dom;
 
 namespace TestApi.Parser
 {
@@ -32,49 +30,34 @@ namespace TestApi.Parser
 
             return resStr;
         }
-        public async void ParseOkpd2()
+        public async Task<List<Okpd2>> ParseOkpd2()
         {
             var requester = new DefaultHttpRequester();
             requester.Headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36 Edg/100.0.1185.44";
 
-            var config = new Configuration();
-
             List<Okpd2> okpd2Elements = new List<Okpd2>();
-            Dictionary<string, string> okpd2sDictionary = new Dictionary<string, string>();
 
-            using (var context = BrowsingContext.New(Configuration.Default.With(requester).WithJs().WithDefaultLoader()))
+            using (var context = BrowsingContext.New(Configuration.Default.With(requester).WithDefaultLoader()))
             {
                 string url = "https://base.garant.ru/70650730/#friends";
 
                 using var doc = await context.OpenAsync(url);
 
                 await doc.WaitForReadyAsync();
-                await doc.WaitUntilAvailable();
 
                 var okpd2Container = doc.QuerySelector("#ul_num1");
 
                 foreach (var item in okpd2Container.Children)
                 {
-                    var keyValue = item.QuerySelector("a").Text().Substring(7).Split(". ");
+                    var okpdValues = item.QuerySelector("a").Text().Substring(7).Split(". ");
 
-                    //okpd2sDictionary.Add(keyValue[0], keyValue[1]);
-                    okpd2Elements.Add(new Okpd2(keyValue[0], keyValue[1]));
+                    okpd2Elements.Add(new Okpd2(okpdValues[0], okpdValues[1]));
 
                     var innerOkpdDoc = await ((IHtmlAnchorElement)item.QuerySelector("a")).NavigateAsync();
 
                     await innerOkpdDoc.WaitForReadyAsync();
-                    await innerOkpdDoc.WaitUntilAvailable();
-
-                    //"p.s_1 span.s_10"
 
                     var okpd2InnerList = innerOkpdDoc.QuerySelectorAll("tr");
-                    //innerOkpdDoc.All.Where
-                    //(
-                    //    el =>
-                    //    el.ClassName == "s_1" || el.ClassName = "s_10"
-                    //);
-
-
 
                     for (int i = 0; i < okpd2InnerList.Count(); i++)
                     {
@@ -85,8 +68,8 @@ namespace TestApi.Parser
                         if (listItem.Count() == 0 || listItem.Count() > 2)
                             continue;
 
-                        if (listItem[0] == null || listItem[1] == null)
-                            continue;
+                        //if (listItem[0] == null || listItem[1] == null)
+                        //    continue;
 
                         if (string.IsNullOrWhiteSpace(listItem[0].InnerHtml) || !char.IsDigit(listItem[0].InnerHtml[0]))
                             continue;
@@ -101,9 +84,6 @@ namespace TestApi.Parser
 
                             okpdValue =
                                 getStringBetweenTags(listItem[1].InnerHtml);
-                            //okpd2InnerList[i + 1]
-                            //.InnerHtml.Remove(0, okpd2InnerList[i + 1].InnerHtml.IndexOf('>'))
-                            //.Remove(okpd2InnerList[i + 1].InnerHtml.IndexOf('<'));
                         }
                         else
                         {
@@ -112,64 +92,63 @@ namespace TestApi.Parser
                         }
                         //Console.WriteLine($"{okpdKey}: {okpdValue}");
 
-                        //okpd2sDictionary.TryAdd(okpdKey, okpdValue);
+                        if (okpdValue.Contains('"'))
+                            okpdValue = okpdValue.Replace("\"", "");
+                                
                         okpd2Elements.Add(new Okpd2(okpdKey, okpdValue));
 
+                        innerOkpdDoc.Dispose();
                     }
                 }
 
                 okpd2Elements = okpd2Elements.DistinctBy(okpd => okpd.Code).ToList();
 
-                okpd2Elements.RemoveAll(x => x.Name == null || x.Code == null);
+                okpd2Elements = okpd2Elements.DistinctBy(okpd => okpd.Name).ToList();
 
-                using (SearchAndRangeContext dbContext = new SearchAndRangeContext())
+                Stack<string> parentsCodes = new(); 
+
+                for (int i = 0; i < okpd2Elements.Count; i++)
                 {
-                    //foreach (var item in okpd2Elements)
-                    //{
-                    //    var dbOkpd2 = dbContext.Okpd2s.Find(item.Code);
+                    var currCodeParts = okpd2Elements[i].Code.Split('.');
 
-                    //    if (dbOkpd2 == null)
-                    //        await dbContext.Okpd2s.AddRangeAsync(item);
-                    //}
+                    string[] parentsCodeParst;
 
-                    await dbContext.Okpd2s.AddRangeAsync(okpd2Elements);
+                    if (currCodeParts.Length == 1)
+                    {
+                        parentsCodes.Clear();
+                        parentsCodes.Push(okpd2Elements[i].Code);
+                        continue;
+                    }
 
-                    dbContext.SaveChanges();
+                    bool canStop = false;
+                    while (parentsCodes.Count > 0 && !canStop)
+                    {
+                        parentsCodeParst = parentsCodes.Peek().Split('.');
+
+                        for (int j = currCodeParts.Length - 2; j >= 0; j--)
+                        {
+                            if (currCodeParts.Length > 1 &&
+                                (currCodeParts[j] == parentsCodeParst[^1]
+                                 && currCodeParts.Length > parentsCodeParst.Length
+                                )
+                                || (parentsCodeParst.Length == 1))
+                            {
+                                okpd2Elements[i].Parent = parentsCodes.Peek();
+                                canStop = true;
+                                break;
+                            }
+                        }
+
+                        if (!canStop)
+                            parentsCodes.Pop();
+                    }
+
+                    parentsCodes.Push(okpd2Elements[i].Code);
                 }
 
-                return;
+                doc.Dispose();
 
-                ////IHtmlAnchorElement opt = 
-                ////    (IHtmlAnchorElement)doc.QuerySelector("a.search-form__btn-advanced-search");
-
-                ////opt.DoClick();
-
-                //IHtmlButtonElement okpdButton = 
-                //    (IHtmlButtonElement)doc.QuerySelector("#OKPD2_open_button");
-
-                //okpdButton.DoClick();
-                //okpdButton.Dispatch(new Event("click"));
-                //okpdButton.Dispatch(new Event("focus"));
-
-                //await doc.WhenStable();
-
-                ////okpdButton.InvokeEventListener(new Event("click"));
-
-                ////doc.Scripts[0].
-                ////Jint.Engine engine = new Jint.Engine(); engine.
-                //IHtmlCollection<IElement> okpd2DocEls = null;
-
-                //await doc.Then(
-                //    doc => okpd2DocEls =
-                //    doc.ChildNodes.QuerySelectorAll("a.jstree-node-name"));
-
-
-                //foreach (var item in okpd2DocEls)
-                //{
-                //    okpd2sDictionary.Add(item.Children[0].TextContent, item.NodeValue);
-                //}
-
-                //return okpd2Elements;
+                return okpd2Elements;
             }
         } 
     }

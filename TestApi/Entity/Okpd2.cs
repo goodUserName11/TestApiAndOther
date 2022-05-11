@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace TestApi
+namespace TestApi.Entity
 {
     [Serializable]
     [Table("Okpd2")]
@@ -13,18 +13,27 @@ namespace TestApi
         [Key]
         [Column("Code")]
         public string Code { get; } = "";
+
         [Column("Name")]
-        public string? Name { get; }
+        public string Name { get; } = "";
+
+        [Column("Parent")]
+        public string? Parent { get; set; }
 
         public Okpd2()
         {
 
         }
 
-        public Okpd2(string Code, string name)
+        public Okpd2(string code, string name)
         {
-            this.Code = Code;
-            this.Name = name;
+            this.Code = code;
+            Name = name;
+        }
+
+        public Okpd2(string code, string name, string? parent) : this(code, name)
+        {
+            Parent = parent;
         }
 
         //public Okpd2Element(Okpd2Element? parent, string number, string name) : this(number, name)
