@@ -4,6 +4,7 @@ using TestApi.Data;
 using TestApi.Entity;
 using System.Security.Cryptography;
 using System.Text;
+using TestApi.Authentication;
 
 namespace TestApi.Controllers
 {
@@ -11,6 +12,13 @@ namespace TestApi.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
+        ILogger<UserController> _logger;
+
+        public UserController(ILogger<UserController> logger)
+        {
+            _logger = logger;
+        }
+
         [HttpGet]
         public async Task<ActionResult<List<User>>> Get()
         {
@@ -21,6 +29,9 @@ namespace TestApi.Controllers
 
                 await context.DisposeAsync();
             }
+
+            _logger.LogInformation("Hello!");
+
             return Ok(users);
         }
 
@@ -43,7 +54,7 @@ namespace TestApi.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> Add([FromBody]UserForRequest requestUser)
+        public async Task<ActionResult> Add([FromBody]RegistrationModel requestUser)
         {
             using (SearchAndRangeContext context = new())
             {
@@ -74,8 +85,7 @@ namespace TestApi.Controllers
 
                 var newUser = new User(passwordHash, requestUser.Name, 
                     requestUser.Surname, requestUser.Patronimic, requestUser.Email, 
-                    requestUser.Phone, roleId.Value, requestUser.RegistratedBy, 
-                    requestUser.CompanyInn);
+                    requestUser.Phone, roleId.Value, requestUser.CompanyInn);
 
                 context.Users.Add(newUser);
 
@@ -86,8 +96,8 @@ namespace TestApi.Controllers
             return Ok();
         }
 
-        [HttpPost("sign-in")]
-        public async Task<ActionResult> SignIn([FromBody]UserForRequest RequestUser)
+        [HttpPost("signin")]
+        public async Task<ActionResult> SignIn([FromBody]LoginModel RequestUser)
         {
             User? dbUser;
 

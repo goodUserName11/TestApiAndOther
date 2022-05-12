@@ -62,7 +62,6 @@ namespace TestApi.Data
             modelBuilder.Entity<User>().Property(b => b.Email).HasColumnName("Email");
             modelBuilder.Entity<User>().Property(b => b.Phone).HasColumnName("Phone");
             modelBuilder.Entity<User>().Property(b => b.Role).HasColumnName("Role");
-            modelBuilder.Entity<User>().Property(b => b.RegistratedBy).HasColumnName("Registrated_By");
             modelBuilder.Entity<User>().Property(b => b.CompanyInn).HasColumnName("Company");
         }
     }

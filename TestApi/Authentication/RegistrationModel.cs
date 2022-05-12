@@ -1,14 +1,14 @@
-﻿namespace TestApi.Entity
+﻿namespace TestApi.Authentication
 {
-    public class UserForRequest
+    public class RegistrationModel
     {
-        public UserForRequest()
+        public RegistrationModel()
         {
 
         }
 
-        public UserForRequest(string password, string? name, string? surname, string? patronimic,
-            string email, string phone, Guid? role, Guid? registratedBy, string companyInn, string companyName, 
+        public RegistrationModel(string password, string? name, string? surname, string? patronimic,
+            string email, string phone, Guid? role, string companyInn, string companyName, 
             string companyAdress)
         {
             Password = password;
@@ -18,7 +18,6 @@
             Email = email;
             Phone = phone;
             Role = role;
-            RegistratedBy = registratedBy;
             CompanyInn = companyInn;
             CompanyName = companyName;
             CompanyAddress = companyAdress;
@@ -31,7 +30,6 @@
         public string Email { get; set; }
         public string? Phone { get; set; }
         public Guid? Role { get; set; }
-        public Guid? RegistratedBy { get; set; }
         public string? CompanyInn { get; set; }
         public string? CompanyName { get; set; }
         public string? CompanyAddress { get; set; }

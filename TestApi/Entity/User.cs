@@ -12,7 +12,7 @@ namespace TestApi.Entity
         }
 
         public User(byte[] password, string? name, string? surname, string? patronimic, 
-            string email, string phone, Guid role, Guid? registratedBy, string companyInn)
+            string email, string? phone, Guid role, string companyInn)
         {
             Password = password;
             Name = name;
@@ -21,7 +21,6 @@ namespace TestApi.Entity
             Email = email;
             Phone = phone;
             Role = role;
-            RegistratedBy = registratedBy;
             CompanyInn = companyInn;
         }
 
@@ -32,9 +31,8 @@ namespace TestApi.Entity
         public string? Surname { get; set; }
         public string? Patronimic { get; set; }
         public string Email { get; set; }
-        public string Phone { get; set; }
+        public string? Phone { get; set; }
         public Guid Role { get; set; }
-        public Guid? RegistratedBy { get; set; }
         public string CompanyInn { get; set; }
     }
 }
