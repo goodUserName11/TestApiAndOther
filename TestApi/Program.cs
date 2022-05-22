@@ -1,8 +1,16 @@
+using TestApi.Authentication;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
+builder.Services.AddCors();
 builder.Services.AddControllers();
+
+builder.Services.AddHttpContextAccessor();
+
+builder.Services.Configure<TestApi.AppSettings>(builder.Configuration.GetSection("AppSettings"));
+
+builder.Services.AddScoped<IUserService, UserService>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddSwaggerGen();
@@ -28,14 +36,16 @@ app.UseCors(opt =>
 
 app.UseAuthorization();
 
+app.UseMiddleware<TestApi.Authentication.JwtMiddleware>();
+
 app.MapControllers();
 
-//using (TestApi.Data.SearchAndRangeContext dbContext = new())
-//{
-//    if (dbContext.Okpd2s.Count() == 0)
-//    {
-//        TestApi.Adapter.AdapterContainer.Okpd2Adapter.AddToDb();
-//    }
-//}
+using (TestApi.Data.SearchAndRangeContext dbContext = new())
+{
+    if (dbContext.Okpd2s.Count() == 0)
+    {
+        TestApi.Adapter.AdapterContainer.Okpd2Adapter.AddToDb();
+    }
+}
 
 app.Run();

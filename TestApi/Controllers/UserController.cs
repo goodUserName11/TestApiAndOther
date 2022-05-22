@@ -5,6 +5,9 @@ using TestApi.Entity;
 using System.Security.Cryptography;
 using System.Text;
 using TestApi.Authentication;
+using System.Security.Claims;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace TestApi.Controllers
 {
@@ -13,12 +16,17 @@ namespace TestApi.Controllers
     public class UserController : ControllerBase
     {
         ILogger<UserController> _logger;
+        IConfiguration _configuration;
+        IUserService _userService;
 
-        public UserController(ILogger<UserController> logger)
+        public UserController(ILogger<UserController> logger, IConfiguration configuration, IUserService userService)
         {
             _logger = logger;
+            _configuration = configuration;
+            _userService = userService;
         }
 
+        [Authorize]
         [HttpGet]
         public async Task<ActionResult<List<User>>> Get()
         {
@@ -30,11 +38,10 @@ namespace TestApi.Controllers
                 await context.DisposeAsync();
             }
 
-            _logger.LogInformation("Hello!");
-
             return Ok(users);
         }
 
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<ActionResult<User>> GetOne(Guid id)
         {
@@ -58,8 +65,7 @@ namespace TestApi.Controllers
         {
             using (SearchAndRangeContext context = new())
             {
-                Guid defaultRole = Guid.Parse("dc6f5947-6e2b-4704-857c-929d20f7b953");
-                Guid? roleId = null;
+                Guid defaultRole = Guid.Parse("62aee459-6fd9-44ef-bb8d-696ead00b01a");
 
                 if ((context.Users.FirstOrDefault(user => user.Email == requestUser.Email)) != null)
                     return BadRequest(new { ErrorMessage = "Такой пользователь уже существует" });
@@ -71,21 +77,12 @@ namespace TestApi.Controllers
                     context.SaveChanges();
                 }
 
-                if (requestUser.Role != null)
-                {
-                    roleId = (await context.Roles.FindAsync(requestUser.Role))?.Id;
-
-                    if (roleId == null)
-                        return BadRequest(new { ErrorMessage = "Не правильные данные" });
-                }
-                else roleId = defaultRole;
-
                 var hashAlgorithm = MD5.Create();
                 var passwordHash = hashAlgorithm.ComputeHash(Encoding.UTF8.GetBytes(requestUser.Password));
 
                 var newUser = new User(passwordHash, requestUser.Name, 
                     requestUser.Surname, requestUser.Patronimic, requestUser.Email, 
-                    requestUser.Phone, roleId.Value, requestUser.CompanyInn);
+                    requestUser.Phone, defaultRole, requestUser.CompanyInn);
 
                 context.Users.Add(newUser);
 
@@ -97,27 +94,66 @@ namespace TestApi.Controllers
         }
 
         [HttpPost("signin")]
-        public async Task<ActionResult> SignIn([FromBody]LoginModel RequestUser)
+        public async Task<ActionResult<ApplicationUser>> SignIn([FromBody]LoginModel RequestUser)
         {
-            User? dbUser;
+            var iser = _userService.Authenticate(RequestUser);
+            User dbUser;
+            Role role;
 
-            using (SearchAndRangeContext context = new()) 
+            using (SearchAndRangeContext context = new())
             {
                 dbUser = (context?.Users?.FirstOrDefault(user => user.Email == RequestUser.Email));
+
+                if (dbUser == null)
+                    return BadRequest(new { ErrorMessage = "Не верный логин или пароль" });
+
+                role = await context.Roles.FindAsync(dbUser.Role);
 
                 await context.DisposeAsync();
             }
 
-            if (dbUser == null)
-                return BadRequest(new { ErrorMessage = "Не верный логин или пароль" });
+            
 
             var hashAlgorithm = MD5.Create();
             var passwordHash = hashAlgorithm.ComputeHash(Encoding.UTF8.GetBytes(RequestUser.Password));
 
-            if (passwordHash.Union(dbUser.Password).Count() != dbUser.Password.Length)
+            if (!passwordHash.SequenceEqual(dbUser.Password))
                 return BadRequest(new { ErrorMessage = "Не верный логин или пароль" });
 
+            CreateToken(dbUser);
+
+            ApplicationUser appUser = new(dbUser.Id, role.Name, iser.Token);
+
+            return Ok(appUser);
+        }
+
+        [HttpGet("logout")]
+        public async Task<ActionResult> Logout()
+        {
+            
             return Ok();
+        }
+
+        private string CreateToken(User user)
+        {
+            List<Claim> claims = new List<Claim>()
+            {
+                new Claim(ClaimTypes.Name, user.Name),
+            };
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
+                _configuration.GetSection("AppSettings:Secret").Value));
+
+            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha512);
+
+            var token = new JwtSecurityToken(
+                claims: claims,
+                expires: DateTime.Now.AddHours(10),
+                signingCredentials: credentials);
+
+            var jwt = new JwtSecurityTokenHandler().WriteToken(token);
+
+            return jwt;
         }
     }
 }

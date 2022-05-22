@@ -30,6 +30,23 @@ namespace TestApi.Parser
 
             return resStr;
         }
+
+        private string getStringWithoutTag(string innerHtml)
+        {
+            string str = getStringBetweenTags(innerHtml);
+            string res = "";
+
+            foreach (var item in innerHtml)
+            {
+                if (item == '<')
+                    break;
+
+                res += item;
+            }
+
+            return $"{res} {str}";
+        }
+
         public async Task<List<Okpd2>> ParseOkpd2()
         {
             var requester = new DefaultHttpRequester();
@@ -65,17 +82,20 @@ namespace TestApi.Parser
 
                         string okpdKey, okpdValue;
 
-                        if (listItem.Count() == 0 || listItem.Count() > 2)
+                        if (listItem.Count() < 2)
                             continue;
 
-                        //if (listItem[0] == null || listItem[1] == null)
-                        //    continue;
+                        if(listItem[0].FirstElementChild != null)
+                            listItem[0].InnerHtml = listItem[0].FirstElementChild.InnerHtml;
+                        if (listItem[1].FirstElementChild != null)
+                            listItem[1].InnerHtml = listItem[1].FirstElementChild.InnerHtml;
+                            
 
                         if (string.IsNullOrWhiteSpace(listItem[0].InnerHtml) || !char.IsDigit(listItem[0].InnerHtml[0]))
                             continue;
 
                         if (listItem[1].InnerHtml.Contains("href"))
-                            continue;
+                            listItem[1].InnerHtml = getStringWithoutTag(listItem[1].InnerHtml);
 
                         if (listItem[0].InnerHtml.StartsWith('<'))
                         {
@@ -90,7 +110,6 @@ namespace TestApi.Parser
                             okpdKey = listItem[0].InnerHtml;
                             okpdValue = listItem[1].InnerHtml;
                         }
-                        //Console.WriteLine($"{okpdKey}: {okpdValue}");
 
                         if (okpdValue.Contains('"'))
                             okpdValue = okpdValue.Replace("\"", "");
@@ -103,48 +122,19 @@ namespace TestApi.Parser
 
                 okpd2Elements = okpd2Elements.DistinctBy(okpd => okpd.Code).ToList();
 
-                okpd2Elements = okpd2Elements.DistinctBy(okpd => okpd.Name).ToList();
-
                 Stack<string> parentsCodes = new(); 
 
                 for (int i = 0; i < okpd2Elements.Count; i++)
                 {
-                    var currCodeParts = okpd2Elements[i].Code.Split('.');
-
-                    string[] parentsCodeParst;
-
-                    if (currCodeParts.Length == 1)
-                    {
+                    if (char.IsUpper((okpd2Elements[i].Code[0])))
                         parentsCodes.Clear();
-                        parentsCodes.Push(okpd2Elements[i].Code);
-                        continue;
-                    }
 
-                    bool canStop = false;
-                    while (parentsCodes.Count > 0 && !canStop)
-                    {
-                        parentsCodeParst = parentsCodes.Peek().Split('.');
+                    if(okpd2Elements[i].Code == "20.59.59.110" || okpd2Elements[i].Code == "20.59.59.200" ||
+                        okpd2Elements[i].Code == "86.22.19.900" || okpd2Elements[i].Code == "96.02")
+                        Console.WriteLine();
 
-                        for (int j = currCodeParts.Length - 2; j >= 0; j--)
-                        {
-                            if (currCodeParts.Length > 1 &&
-                                (currCodeParts[j] == parentsCodeParst[^1]
-                                 && currCodeParts.Length > parentsCodeParst.Length
-                                )
-                                || (parentsCodeParst.Length == 1))
-                            {
-                                okpd2Elements[i].Parent = parentsCodes.Peek();
-                                canStop = true;
-                                break;
-                            }
-                        }
-
-                        if (!canStop)
-                            parentsCodes.Pop();
-                    }
-
-                    parentsCodes.Push(okpd2Elements[i].Code);
                 }
+
 
                 doc.Dispose();
 

@@ -1,4 +1,6 @@
-﻿namespace TestApi.Authentication
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace TestApi.Authentication
 {
     public class RegistrationModel
     {
@@ -7,31 +9,38 @@
 
         }
 
-        public RegistrationModel(string password, string? name, string? surname, string? patronimic,
-            string email, string phone, Guid? role, string companyInn, string companyName, 
+        public RegistrationModel(string email, string password, string name, string surname, string patronimic,
+            string phone, string companyInn, string companyName, 
             string companyAdress)
         {
+            Email = email;
             Password = password;
             Name = name;
             Surname = surname;
             Patronimic = patronimic;
-            Email = email;
             Phone = phone;
-            Role = role;
             CompanyInn = companyInn;
             CompanyName = companyName;
             CompanyAddress = companyAdress;
         }
 
-        public string Password { get; set; }
-        public string? Name { get; set; }
-        public string? Surname { get; set; }
-        public string? Patronimic { get; set; }
+        [Required]
         public string Email { get; set; }
-        public string? Phone { get; set; }
-        public Guid? Role { get; set; }
-        public string? CompanyInn { get; set; }
-        public string? CompanyName { get; set; }
-        public string? CompanyAddress { get; set; }
+        [Required]
+        public string Password { get; set; }
+        [Required]
+        public string Name { get; set; }
+        [Required]
+        public string Surname { get; set; }
+        [Required]
+        public string Patronimic { get; set; }
+        [Required]
+        public string Phone { get; set; }
+        [Required]
+        public string CompanyInn { get; set; }
+        [Required]
+        public string CompanyName { get; set; }
+        [Required]
+        public string CompanyAddress { get; set; }
     }
 }
