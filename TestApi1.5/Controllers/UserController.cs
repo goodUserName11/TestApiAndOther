@@ -26,21 +26,30 @@ namespace TestApi.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<User>> GetOne(Guid id)
+        public async Task<ActionResult<RegistrationModel>> GetOne(string id)
         {
             User? user = null;
+            UserCompany? company;
 
             using (var context = new SearchAndRangeContext())
             {
-                user = context.Users.FirstOrDefault(u => u.Id == id);
+                user = await context.Users.FindAsync(Guid.Parse(id));
+
+                company = await context.Companies.FindAsync(user.CompanyInn);
 
                 await context.DisposeAsync();
             }
 
             if (user == null) 
-                return NotFound();
+                return NotFound(new { ErrorMessage = "Пользователь не найден" });
 
-            return Ok(user);
+            if (company == null)
+                return BadRequest(new { ErrorMessage = "Компания пользователя не найдена" });
+
+            return Ok(
+                new UserProfileModel(user.Email, user.Name, user.Surname, user.Patronimic, 
+                user.Phone, user.CompanyInn, company.CompanyName, company.Address)
+                );
         }
 
         [HttpPost]
