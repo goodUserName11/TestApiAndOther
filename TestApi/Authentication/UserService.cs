@@ -8,6 +8,7 @@
     using System.Text;
     using TestApi.Data;
     using TestApi.Entity;
+    using TestApi.Model;
 
     public interface IUserService
     {

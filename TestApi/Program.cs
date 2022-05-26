@@ -40,12 +40,12 @@ app.UseMiddleware<TestApi.Authentication.JwtMiddleware>();
 
 app.MapControllers();
 
-using (TestApi.Data.SearchAndRangeContext dbContext = new())
-{
-    if (dbContext.Okpd2s.Count() == 0)
-    {
-        TestApi.Adapter.AdapterContainer.Okpd2Adapter.AddToDb();
-    }
-}
+//using (TestApi.Data.SearchAndRangeContext dbContext = new())
+//{
+//    if (dbContext.Okpd2s.Count() == 0)
+//    {
+//        TestApi.Adapter.AdapterContainer.Okpd2Adapter.AddToDb();
+//    }
+//}
 
 app.Run();

@@ -17,9 +17,9 @@ namespace TestApi.Controllers
             if(okpd2 is null)
                 return NotFound();
 
-            //list.AddRange(await AdapterContainer.OtcAdapter.Find(okpd2));
+            var ad = new SupplierSearchAdapter();
 
-            list.AddRange(await new OtherParcer().Parse(okpd2));
+            await ad.Find(okpd2);
 
             return BadRequest();
         }
