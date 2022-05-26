@@ -32,6 +32,14 @@ using (TestApi.Data.SearchAndRangeContext dbContext = new TestApi.Data.SearchAnd
     {
         TestApi.Adapter.AdapterContainer.Okpd2Adapter.AddToDb();
     }
+
+    //if(dbContext.Users.Count() == 0)
+    //{
+    //    await dbContext.Users.AddAsync(
+    //        new TestApi.Entity.User());
+    //}
+
+    await dbContext.DisposeAsync();
 }
 
 app.Run();

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace TestApi.Authentication
+namespace TestApi.Model
 {
     public class RegistrationModel
     {
@@ -32,8 +32,7 @@ namespace TestApi.Authentication
         public string Name { get; set; }
         [Required]
         public string Surname { get; set; }
-        [Required]
-        public string Patronimic { get; set; }
+        public string? Patronimic { get; set; }
         [Required]
         public string Phone { get; set; }
         [Required]

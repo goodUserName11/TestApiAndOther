@@ -1,43 +1,40 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace TestApi.Authentication
+namespace TestApi.Model
 {
-    public class UserProfileModel
+    public class UserListModel
     {
-        public UserProfileModel()
+        public UserListModel()
         {
 
         }
 
-        public UserProfileModel(string email, string name, string surname, string patronimic,
-            string phone, string companyInn, string companyName,
-            string companyAdress)
+        public UserListModel(int id, string email, string name, string surname, string? patronimic, Guid role, string companyInn, string companyName)
         {
+            Id = id;
             Email = email;
             Name = name;
             Surname = surname;
             Patronimic = patronimic;
-            Phone = phone;
+            Role = role;
             CompanyInn = companyInn;
             CompanyName = companyName;
-            CompanyAddress = companyAdress;
         }
 
         [Required]
+        public int Id { get; set; }
         public string Email { get; set; }
         [Required]
         public string Name { get; set; }
         [Required]
         public string Surname { get; set; }
+        public string? Patronimic { get; set; }
         [Required]
-        public string Patronimic { get; set; }
-        [Required]
-        public string Phone { get; set; }
+        public Guid Role { get; set; }
+
         [Required]
         public string CompanyInn { get; set; }
         [Required]
         public string CompanyName { get; set; }
-        [Required]
-        public string CompanyAddress { get; set; }
     }
 }

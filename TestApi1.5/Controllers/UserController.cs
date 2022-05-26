@@ -5,6 +5,7 @@ using TestApi.Entity;
 using System.Security.Cryptography;
 using System.Text;
 using TestApi.Authentication;
+using TestApi.Model;
 
 namespace TestApi.Controllers
 {
@@ -55,10 +56,10 @@ namespace TestApi.Controllers
         [HttpPost]
         public async Task<ActionResult> Add([FromBody]RegistrationModel requestUser)
         {
+            Guid role;
+
             using (SearchAndRangeContext context = new())
             {
-                Guid defaultRole = Guid.Parse("62aee459-6fd9-44ef-bb8d-696ead00b01a");
-
                 if ((context.Users.FirstOrDefault(user => user.Email == requestUser.Email)) != null)
                     return BadRequest(new { errorText = "Такой пользователь уже зарегистрирован" });
 
@@ -67,14 +68,18 @@ namespace TestApi.Controllers
                     context.Companies.Add(
                         new UserCompany(requestUser.CompanyInn, requestUser.CompanyName, requestUser.CompanyAddress));
                     context.SaveChanges();
+
+                    role = UserRoles.Moderator.Id;
                 }
+                else
+                    role = UserRoles.User.Id;
 
                 var hashAlgorithm = MD5.Create();
                 var passwordHash = hashAlgorithm.ComputeHash(Encoding.UTF8.GetBytes(requestUser.Password));
 
                 var newUser = new User(passwordHash, requestUser.Name, 
                     requestUser.Surname, requestUser.Patronimic, requestUser.Email, 
-                    requestUser.Phone, defaultRole, requestUser.CompanyInn);
+                    requestUser.Phone, role, requestUser.CompanyInn);
 
                 context.Users.Add(newUser);
 

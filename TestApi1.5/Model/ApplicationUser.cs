@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace TestApi.Authentication
+namespace TestApi.Model
 {
     public class ApplicationUser
     {
