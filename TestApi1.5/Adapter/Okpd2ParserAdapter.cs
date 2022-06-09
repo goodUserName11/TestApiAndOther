@@ -44,14 +44,14 @@ namespace TestApi.Adapter
                     okpd2s = dbContext.Okpd2s.Take(top.Value - okpdsLetters.Count).ToList();
             }
 
-
-            for (int i = 0; i < okpd2s.Count; i++)
+            
+            for(int i = 0; i < okpd2s.Count; i++)
             {
-                if (okpdsLetters.Count > 0 && okpd2s[i].Parent == okpdsLetters[0].Code)
+                if(okpdsLetters.Count > 0 && okpd2s[i].Parent == okpdsLetters[0].Code) 
                 {
                     res.Add(okpdsLetters[0]);
 
-                    okpdsLetters.RemoveAt(0);
+                    okpdsLetters.RemoveAt(0); 
                 }
 
                 res.Add(okpd2s[i]);

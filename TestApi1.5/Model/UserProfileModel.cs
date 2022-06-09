@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using TestApi.Entity;
 
 namespace TestApi.Model
 {
@@ -7,6 +8,18 @@ namespace TestApi.Model
         public UserProfileModel()
         {
 
+        }
+
+        public UserProfileModel(User dbUser)
+        {
+            Email = dbUser.Email;
+            Name = dbUser.Name;
+            Surname = dbUser.Surname;
+            Patronimic = dbUser.Patronimic;
+            Phone = dbUser.Phone;
+            CompanyInn = dbUser.CompanyInn;
+            CompanyName = dbUser.Company.CompanyName;
+            CompanyAddress = dbUser.Company.Address;
         }
 
         public UserProfileModel(string email, string name, string surname, string patronimic,

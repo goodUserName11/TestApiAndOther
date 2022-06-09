@@ -15,6 +15,7 @@ namespace TestApi.Model
             Password = password;
         }
 
+        [EmailAddress]
         [Required(ErrorMessage = "Нужена почта")]
         public string Email { get; set; }
 

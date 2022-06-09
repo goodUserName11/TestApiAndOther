@@ -4,10 +4,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-//builder.WebHost
-//    //.UseKestrel().ConfigureKestrel(opt => opt.ListenAnyIP(40215))
-//    .UseIIS()
-//    .UseUrls("http://l*:*", "https://*:*");
+builder.Services.AddCors();
 
 var app = builder.Build();
 
@@ -17,12 +14,13 @@ var app = builder.Build();
 
 app.UseAuthorization();
 
-app.UseCors(opt => 
+app.UseCors(opt =>
     opt
     //.AllowCredentials()
+    .AllowAnyHeader()
     .AllowAnyOrigin()
     .AllowAnyMethod()
-);
+) ;
 
 app.MapControllers();
 
@@ -38,6 +36,10 @@ using (TestApi.Data.SearchAndRangeContext dbContext = new TestApi.Data.SearchAnd
     //    await dbContext.Users.AddAsync(
     //        new TestApi.Entity.User());
     //}
+
+    dbContext.SupplierInLists.RemoveRange(dbContext.SupplierInLists.Where(s => s.SupplierListId == null));
+
+    dbContext.SaveChanges(true);
 
     await dbContext.DisposeAsync();
 }

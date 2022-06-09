@@ -12,7 +12,7 @@ namespace TestApi.Entity
         }
 
         public User(byte[] password, string? name, string? surname, string? patronimic, 
-            string email, string phone, Guid role, string companyInn)
+            string email, string? phone, Guid role, string companyInn)
         {
             Password = password;
             Name = name;
@@ -31,8 +31,14 @@ namespace TestApi.Entity
         public string? Surname { get; set; }
         public string? Patronimic { get; set; }
         public string Email { get; set; }
-        public string Phone { get; set; }
+        public string? Phone { get; set; }
+        [ForeignKey("RoleRole")]
         public Guid Role { get; set; }
+        [ForeignKey("Company")]
         public string CompanyInn { get; set; }
+
+        public UserCompany Company { get; set; }
+
+        public Role RoleRole { get; set; }
     }
 }

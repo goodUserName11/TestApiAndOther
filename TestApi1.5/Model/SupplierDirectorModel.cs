@@ -1,7 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
 
 namespace TestApi.Model
 {
+    [Serializable]
     public class SupplierDirectorModel
     {
         public SupplierDirectorModel()

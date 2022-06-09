@@ -24,6 +24,7 @@ namespace TestApi.Model
             CompanyAddress = companyAdress;
         }
 
+        [EmailAddress]
         [Required]
         public string Email { get; set; }
         [Required]

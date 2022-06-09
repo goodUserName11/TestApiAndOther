@@ -10,6 +10,17 @@ namespace TestApi.Data
         public DbSet<Role> Roles { get; set; }
         public DbSet<UserCompany> Companies { get; set; }
 
+        public DbSet<Supplier> Suppliers { get; set; }
+        public DbSet<Contact> Contacts { get; set; }
+        public DbSet<Product> Products { get; set; }
+
+        public DbSet<SuppliersList> SuppliersLists { get; set; }
+        public DbSet<SupplierInList> SupplierInLists { get; set; }
+
+        public DbSet<CriterionСoefficientType> Types { get; set; }
+        public DbSet<Coefficient> Coefficients { get; set; }
+        public DbSet<CoefficientValue> CoefficientValues { get; set; }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseSqlServer(
@@ -63,6 +74,11 @@ namespace TestApi.Data
             modelBuilder.Entity<User>().Property(b => b.Phone).HasColumnName("Phone");
             modelBuilder.Entity<User>().Property(b => b.Role).HasColumnName("Role");
             modelBuilder.Entity<User>().Property(b => b.CompanyInn).HasColumnName("Company");
+
+            //Contact
+            modelBuilder.Entity<Contact>()
+                .HasKey(b => b.Id)
+                .HasName("Id");
         }
     }
 }
