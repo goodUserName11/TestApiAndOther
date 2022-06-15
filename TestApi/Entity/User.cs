@@ -33,6 +33,9 @@ namespace TestApi.Entity
         public string Email { get; set; }
         public string? Phone { get; set; }
         public Guid Role { get; set; }
+        [ForeignKey("Company")]
         public string CompanyInn { get; set; }
+
+        public UserCompany Company { get; set; }
     }
 }

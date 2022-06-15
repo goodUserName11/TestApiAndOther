@@ -10,17 +10,26 @@ namespace TestApi.Model
 
         }
 
-        public SupplierProductModel(string productId, string count, string price)
+        public SupplierProductModel(string productId, int count, string price)
         {
             ProductId = productId;
             Count = count;
             Price = price;
         }
 
+        public SupplierProductModel(string productId, string name, int count, string price)
+        {
+            ProductId = productId;
+            Name = name;
+            Count = count;
+            Price = price;
+        }
+
         [Required]
         public string ProductId { get; set; }
+        public string Name { get; set; }
         [Required]
-        public string Count { get; set; }
+        public int Count { get; set; }
         [Required]
         public string Price { get; set; }
     }

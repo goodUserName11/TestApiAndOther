@@ -16,6 +16,8 @@ namespace TestApi.Authentication
                 Admin = context.Roles.FirstOrDefault(role => role.Name == "admin");
                 Moderator = context.Roles.FirstOrDefault(role => role.Name == "moderator");
                 User = context.Roles.FirstOrDefault(role => role.Name == "user");
+
+                context.Dispose();
             }
         }
     }

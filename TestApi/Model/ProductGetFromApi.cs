@@ -2,14 +2,14 @@
 
 namespace TestApi.Model
 {
-    public class ProductModel
+    public class ProductGetFromApi
     {
-        public ProductModel()
+        public ProductGetFromApi()
         {
 
         }
 
-        public ProductModel(string id, string okpd2, string name)
+        public ProductGetFromApi(string id, string okpd2, string name)
         {
             Id = id;
             Okpd2 = okpd2;

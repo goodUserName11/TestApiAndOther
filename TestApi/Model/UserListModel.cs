@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using TestApi.Entity;
 
 namespace TestApi.Model
 {
@@ -9,7 +10,19 @@ namespace TestApi.Model
 
         }
 
-        public UserListModel(int id, string email, string name, string surname, string? patronimic, Guid role, string companyInn, string companyName)
+        public UserListModel(User user)
+        {
+            Id = user.Id;
+            Email = user.Email;
+            Name = user.Name;
+            Surname = user.Surname;
+            Patronimic = user.Patronimic;
+            Role = user.Role;
+            CompanyInn = user.CompanyInn;
+            CompanyName = user.Company.CompanyName;
+        }
+
+        public UserListModel(Guid id, string email, string name, string surname, string? patronimic, Guid role, string companyInn, string companyName)
         {
             Id = id;
             Email = email;
@@ -22,7 +35,7 @@ namespace TestApi.Model
         }
 
         [Required]
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         public string Email { get; set; }
         [Required]
         public string Name { get; set; }

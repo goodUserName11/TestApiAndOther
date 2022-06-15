@@ -14,5 +14,22 @@ namespace TestApi.Controllers
         {
             return Ok(AdapterContainer.Okpd2Adapter.GetAllOkpd2s(top));
         }
+
+        [HttpGet("Update")]
+        public async Task<ActionResult> Update()
+        {
+            using (SearchAndRangeContext dbContext = new())
+            {
+                dbContext.Okpd2s.RemoveRange(dbContext.Okpd2s);
+
+                await dbContext.SaveChangesAsync(true);
+
+                await AdapterContainer.Okpd2Adapter.AddToDb();
+
+                await dbContext.DisposeAsync();
+            }
+
+            return Ok();
+        }
     }
 }
