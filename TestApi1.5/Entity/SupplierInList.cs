@@ -15,10 +15,13 @@ namespace TestApi.Entity
         [ForeignKey("SuppliersList")]
         public Guid? SupplierListId { get; set; }
         public double Rank { get; set; }
-        public string Okpd2 { get; set; }
+        [Column("ProductId")]
+        [ForeignKey("Product")]
+        public Guid ProductId { get; set; }
         public bool Conflict { get; set; }
 
         public Supplier Supplier { get; set; }
+        public Product Product { get; set; }
         public SuppliersList SuppliersList { get; set; }
     }
 }

@@ -238,7 +238,11 @@ namespace TestApi.Controllers
                         .ToList();
 
                 else if (dbUser.Role == UserRoles.Admin.Id)
-                    users = context.Users.Include(u => u.Company).Include(u => u.Role).Where(u => u == u).ToList();
+                    users = context.Users
+                        .Include(u => u.Company)
+                        .Include(u => u.RoleRole)
+                        .Where(u => u.Id != dbUser.Id)
+                        .ToList(); ;
 
                 await context.DisposeAsync();
             }

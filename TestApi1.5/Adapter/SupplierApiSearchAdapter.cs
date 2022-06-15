@@ -76,7 +76,7 @@ namespace TestApi.Adapter
 
                                 if (dbSupplier == null) 
                                 {
-                                    double reputation = supplier.OverallContracts / supplier.SuccededContracts;
+                                    double reputation = supplier.SuccededContracts / supplier.OverallContracts;
                                     bool dishonesty = 
                                         supplier.Dishonesty != null
                                         && supplier.Dishonesty.Value.AddYears(3) >= DateTime.Now;
@@ -94,7 +94,8 @@ namespace TestApi.Adapter
                                         new Supplier(supplier.Inn, supplier.Name, supplier.Email, supplier.Phone, newContact.Id, 
                                         supplier.Region, supplier.Kpp, supplier.Ogrn, reputation, supplier.WorkSince, dishonesty, 
                                         supplier.BankruptcyOrLiquidation, supplier.WayOfDistribution, supplier.SmallBusinessEntity, 
-                                        supplier.IsManufacturer, supplier.MinimumDeliveryDays, supplier.Conflict));
+                                        supplier.IsManufacturer, supplier.MinimumDeliveryDays, supplier.Conflict,
+                                        supplier.OverallContracts, supplier.SuccededContracts));
 
                                     dbContext.SaveChanges();
                                 }
@@ -104,11 +105,14 @@ namespace TestApi.Adapter
 
                                 var decimalPrice = decimal.Parse(supplier.Products[0].Price, style, provider);
 
-                                dbContext.Products.Add(
-                                    new Product(Guid.NewGuid(), product.Okpd2, supplier.Inn, decimalPrice,
-                                    supplier.Products[0].Count, supplier.Products[0].Name));
+                                var newProduct = new Product(Guid.NewGuid(), product.Okpd2, supplier.Inn, decimalPrice,
+                                    supplier.Products[0].Count, supplier.Products[0].Name);
+
+                                dbContext.Products.Add(newProduct);
 
                                 await dbContext.SaveChangesAsync();
+
+                                resSup[^1].Product.PruductDbId = newProduct.Id;
                             }
 
                             await dbContext.DisposeAsync();
@@ -126,6 +130,91 @@ namespace TestApi.Adapter
 
         }
 
-        
+        public override async Task UpdateAll()
+        {
+            List<SupplierGetFromApi> suppliers = new List<SupplierGetFromApi>();
+
+            var style = NumberStyles.AllowDecimalPoint;
+            var provider = new CultureInfo("en-GB");
+
+            try
+            {
+                HttpClient client = new HttpClient();
+                HttpResponseMessage response = await client.GetAsync("https://6273cc4f3d2b510074221878.mockapi.io/api/source/Suppliers");
+
+                response.EnsureSuccessStatusCode();
+
+                string responseBody = await response.Content.ReadAsStringAsync();
+
+                var options = new JsonSerializerOptions();
+                options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                options.IncludeFields = true;
+                options.UnknownTypeHandling = JsonUnknownTypeHandling.JsonNode;
+
+                suppliers = JsonSerializer.Deserialize<List<SupplierGetFromApi>>(responseBody, options);
+                using (SearchAndRangeContext dbContext = new())
+                {
+                    var dbsuppliers =
+                        dbContext
+                        .Suppliers
+                        .Include(s => s.Products)
+                        .Include(s => s.Contact);
+
+                    foreach (var dbsupplier in dbsuppliers)
+                    {
+                        var supplier = suppliers.Find(s => s.Inn == dbsupplier.Inn);
+                        if (supplier != null)
+                        {
+                            dbsupplier.Kpp = supplier.Kpp;
+                            dbsupplier.SmallBusinessEntity = supplier.SmallBusinessEntity;
+                            dbsupplier.Email = supplier.Email;
+                            dbsupplier.IsManufacturer = supplier.IsManufacturer;
+                            dbsupplier.BankruptcyOrLiquidation = supplier.BankruptcyOrLiquidation;
+                            dbsupplier.Conflict = supplier.Conflict;
+                            dbsupplier.Dishonesty = 
+                                supplier.Dishonesty != null 
+                                && supplier.Dishonesty.Value.AddYears(3) >= DateTime.Now;
+                            dbsupplier.MinimumDeliveryDays = supplier.MinimumDeliveryDays;
+                            dbsupplier.Name = supplier.Name;
+                            dbsupplier.Ogrn = supplier.Ogrn;
+                            dbsupplier.Reputation = supplier.SuccededContracts / supplier.OverallContracts;
+                            dbsupplier.Phone = supplier.Phone;
+                            dbsupplier.Region = supplier.Region;
+                            dbsupplier.WorkSince = supplier.WorkSince;
+                            dbsupplier.WayOfDistribution = supplier.WayOfDistribution;
+                            dbsupplier.SuccededContracts = supplier.SuccededContracts;
+                            dbsupplier.OverallContracts = supplier.OverallContracts;
+
+                            dbsupplier.Contact.Phone1 = supplier.Director.Phone1;
+                            dbsupplier.Contact.Name = supplier.Director.Name;
+                            dbsupplier.Contact.Patronimic = supplier.Director.Patronymic;
+                            dbsupplier.Contact.Surname = supplier.Director.Surname;
+                            dbsupplier.Contact.Phone2 = supplier.Director.Phone2;
+
+                            foreach (var dbproduct in dbsupplier.Products)
+                            {
+                                var product = supplier.Products.Find(p => p.Name == dbproduct.Name);
+
+                                if (product != null)
+                                {
+                                    dbproduct.Price = decimal.Parse(product.Price, style, provider);
+                                    dbproduct.Name = product.Name;
+                                    dbproduct.Count = product.Count;
+                                }
+
+                            }
+                        }
+                    }
+
+                    dbContext.SaveChanges(true);
+
+                    dbContext.Dispose();
+                }
+            }
+            catch (HttpRequestException e)
+            {
+                throw e;
+            }
+        }
     }
 }

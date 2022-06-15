@@ -6,7 +6,7 @@ namespace TestApi.Adapter
 {
     public class Okpd2ParserAdapter : AbstractOkpd2Adapter
     {
-        public override async void AddToDb()
+        public override async Task AddToDb()
         {
             Console.WriteLine("Info: initialization...");
 

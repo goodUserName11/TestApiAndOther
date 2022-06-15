@@ -59,14 +59,17 @@ namespace TestApi.Controllers
                 if (user == null)
                     return NotFound();
 
-                coefficientValue = context.CoefficientValues
-                    .FirstOrDefault(c => c.Id == Guid.Parse(coefficientValuesModel.Id));
+                for (int i = 0; i < coefficientValuesModel.Id.Count; i++)
+                {
+                    coefficientValue = context.CoefficientValues
+                        .FirstOrDefault(c => c.Id == Guid.Parse(coefficientValuesModel.Id[i]));
 
-                if (coefficientValue == null)
-                    return NotFound();
+                    if (coefficientValue == null)
+                        return NotFound();
 
-                coefficientValue.Value = coefficientValuesModel.Value;
-                coefficientValue.IsActive = coefficientValuesModel.IsActive;
+                    coefficientValue.Value = coefficientValuesModel.Value[i];
+                    coefficientValue.IsActive = coefficientValuesModel.IsActive[i];
+                }
 
                 await context.SaveChangesAsync();
 

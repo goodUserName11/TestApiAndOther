@@ -5,6 +5,9 @@ namespace TestApi.Model
     [Serializable]
     public class SupplierProductModel
     {
+        [NonSerialized]
+        public Guid PruductDbId;
+
         public SupplierProductModel()
         {
 

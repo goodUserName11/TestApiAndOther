@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using TestApi.Authentication;
 using TestApi.Data;
 using TestApi.Entity;
 using TestApi.Model;
@@ -13,7 +15,7 @@ namespace TestApi.Controllers
     {
         // GET: api/<SupplierListController>
         [HttpGet]
-        public async Task<ActionResult<List<SupplierInList>>> GetAll([FromQuery] string userId)
+        public async Task<ActionResult<List<SuppliersList>>> GetAll([FromQuery] string userId)
         {
             var supLists = new List<SuppliersList>();
 
@@ -24,7 +26,31 @@ namespace TestApi.Controllers
                 dbContext.Dispose();
             }
 
-                return Ok(supLists);
+            return Ok(supLists);
+        }
+
+        [HttpGet("getAll")]
+        public async Task<ActionResult<List<SuppliersList>>> GetAllForAdmin([FromQuery] string userId)
+        {
+            var supLists = new List<SuppliersList>();
+
+            using (var dbContext = new SearchAndRangeContext())
+            {
+                var user = dbContext.Users.Find(Guid.Parse(userId));
+
+                if (user.Role == UserRoles.Admin.Id)
+                    supLists = dbContext.SuppliersLists.Include(s => s.User).ToList();
+                else if (user.Role == UserRoles.Moderator.Id)
+                    supLists =
+                        dbContext.SuppliersLists
+                                 .Include(s => s.User)
+                                 .Where(s => s.User.CompanyInn == user.CompanyInn)
+                                 .ToList();
+
+                dbContext.Dispose();
+            }
+
+            return Ok(supLists);
         }
 
         // POST api/<SupplierListController>
@@ -34,8 +60,6 @@ namespace TestApi.Controllers
             using (var dbContext = new SearchAndRangeContext())
             {
                 List<SupplierInList> suppliers = new List<SupplierInList>();
-
-                
 
                 SuppliersList suppliersList =
                     dbContext
@@ -49,9 +73,9 @@ namespace TestApi.Controllers
 
                 if (suppliersList == null)
                 {
-                    suppliersList = 
-                        new SuppliersList() 
-                        { 
+                    suppliersList =
+                        new SuppliersList()
+                        {
                             Id = Guid.NewGuid(),
                             Date = DateTime.Now,
                             Name = supplierListModel.ListName,
@@ -65,7 +89,19 @@ namespace TestApi.Controllers
 
                 foreach (var id in supplierListModel.SupliersId)
                 {
-                    dbContext.SupplierInLists.Find(Guid.Parse(id)).SupplierListId = suppliersList.Id;
+                    var SupplierInList =
+                        dbContext.SupplierInLists
+                                 .Include(s => s.Supplier)
+                                 .FirstOrDefault(s => s.Id == Guid.Parse(id));
+
+                    if (dbContext
+                        .SupplierInLists
+                        .Include(s => s.Supplier)
+                        .FirstOrDefault(
+                            s => s.Supplier.Name == SupplierInList.Supplier.Name
+                            && s.SupplierListId == suppliersList.Id
+                         ) == null)
+                        SupplierInList.SupplierListId = suppliersList.Id;
                 }
                 dbContext.SaveChanges(true);
             }

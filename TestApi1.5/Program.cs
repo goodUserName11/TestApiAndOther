@@ -28,18 +28,12 @@ using (TestApi.Data.SearchAndRangeContext dbContext = new TestApi.Data.SearchAnd
 {
     if (dbContext.Okpd2s.Count() == 0)
     {
-        TestApi.Adapter.AdapterContainer.Okpd2Adapter.AddToDb();
+        await TestApi.Adapter.AdapterContainer.Okpd2Adapter.AddToDb();
     }
 
-    //if(dbContext.Users.Count() == 0)
-    //{
-    //    await dbContext.Users.AddAsync(
-    //        new TestApi.Entity.User());
-    //}
+    //dbContext.SupplierInLists.RemoveRange(dbContext.SupplierInLists.Where(s => s.SupplierListId == null));
 
-    dbContext.SupplierInLists.RemoveRange(dbContext.SupplierInLists.Where(s => s.SupplierListId == null));
-
-    dbContext.SaveChanges(true);
+    //dbContext.SaveChanges(true);
 
     await dbContext.DisposeAsync();
 }

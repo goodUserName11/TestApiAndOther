@@ -26,11 +26,17 @@ namespace TestApi.Adapter
                 await dbContext.DisposeAsync();
             }
 
-            dbSuppliers.ForEach(s =>
-                suppliers.Add(new SupplierFoundModel(s))
-            );
+            dbSuppliers.ForEach(s => {
+                suppliers.Add(new SupplierFoundModel(s));
+                suppliers[^1].Product.PruductDbId = s.Products[0].Id;
+            });
 
             return suppliers;
+        }
+
+        public override Task UpdateAll()
+        {
+            return Task.CompletedTask;
         }
     }
 }

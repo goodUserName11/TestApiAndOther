@@ -14,7 +14,8 @@ namespace TestApi.Entity
         public Supplier(string inn, string name, string email, string phone, Guid contactId,
             string region, string kpp, string ogrn, double reputation,
             DateTime workSince, bool dishonesty, bool bankruptcyOrLiquidation, bool wayOfDistribution,
-            bool smallBusinessEntity, bool isManufacturer, int minimumDeliveryDays, string conflict)
+            bool smallBusinessEntity, bool isManufacturer, int minimumDeliveryDays, string conflict, 
+            int overallContracts, int succededContracts)
         {
             Inn = inn;
             Name = name;
@@ -33,6 +34,8 @@ namespace TestApi.Entity
             IsManufacturer = isManufacturer;
             MinimumDeliveryDays = minimumDeliveryDays;
             Conflict = conflict;
+            OverallContracts = overallContracts;
+            SuccededContracts = succededContracts;
         }
 
         [Key]
@@ -62,6 +65,8 @@ namespace TestApi.Entity
         [Column("Minimum_Delivery_Days")]
         public int MinimumDeliveryDays { get; set; }
         public string Conflict { get; set; }
+        public int OverallContracts { get; set; }
+        public int SuccededContracts { get; set; }
 
         public Contact Contact { get; set; }
         [ForeignKey("SupplierId")]

@@ -46,7 +46,10 @@ namespace TestApi.Adapter
                 decimal decimalPrice = 0;
 
                 if (!decimal.TryParse(supplier.Product.Price, style, provider, out decimalPrice))
-                    decimalPrice = decimal.Parse(supplier.Product.Price);
+                {
+                    supplier.Product.Price = supplier.Product.Price.Replace(',', '.');
+                    decimalPrice = decimal.Parse(supplier.Product.Price, style, provider);
+                }
 
                 var doublePrice = Convert.ToDouble(decimalPrice);
 
@@ -60,7 +63,7 @@ namespace TestApi.Adapter
                     && supplier.Dishonesty)
                     continue;
 
-                if (CoefficientValues.FirstOrDefault(t => t.Coefficient.Name == "Банкротство Ликвидация").IsActive
+                if (CoefficientValues.FirstOrDefault(t => t.Coefficient.Name == "Банкротство/Ликвидация").IsActive
                     && supplier.BankruptcyOrLiquidation)
                     continue;
 
@@ -109,7 +112,7 @@ namespace TestApi.Adapter
                             else negRank += coefficientValue.Value;
 
                             break;
-                        case "Банкротство Ликвидация":
+                        case "Банкротство/Ликвидация":
                             if (supplier.BankruptcyOrLiquidation)
                                 negRank += coefficientValue.Value;
                             else posRank += coefficientValue.Value;
@@ -126,7 +129,7 @@ namespace TestApi.Adapter
                             negRank += supplier.MinimumDeliveryDays / maxDeliveryTime * coefficientValue.Value;
 
                             break;
-                        case "Репутация":
+                        case "Деловая репутация":
                             posRank += supplier.Reputation * coefficientValue.Value;
 
                             break;
@@ -143,8 +146,7 @@ namespace TestApi.Adapter
 
                 var supplRes = new SupplierSearchResultModel(supplier, rank, supplier.Conflict == inn);
                 supplierResults.Add(supplRes);
-
-                
+                supplierResults[^1].Product.PruductDbId = supplier.Product.PruductDbId;
             }
 
             if (supplierResults.Count == 0)
@@ -163,7 +165,7 @@ namespace TestApi.Adapter
                         {
                             Id = supplierResult.Id,
                             Conflict = supplierResult.Conflict,
-                            Okpd2 = critiotions.Okpd2,
+                            ProductId = supplierResult.Product.PruductDbId,
                             Rank = supplierResult.Rank,
                             SupplierId = supplierResult.Inn
                         });
