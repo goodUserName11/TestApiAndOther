@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 using TestApi.Authentication;
 using TestApi.Data;
 using TestApi.Entity;
@@ -22,6 +23,9 @@ namespace TestApi.Controllers
             using (var dbContext = new SearchAndRangeContext())
             {
                 supLists = dbContext.SuppliersLists.Where(s => s.UserId == Guid.Parse(userId)).ToList();
+                var dbUser = await dbContext.Users.FindAsync(Guid.Parse(userId));
+
+                Log.Logger.Information($"Получены списки поставщиков пользователем {dbUser.Email}");
 
                 dbContext.Dispose();
             }
@@ -47,6 +51,8 @@ namespace TestApi.Controllers
                                  .Where(s => s.User.CompanyInn == user.CompanyInn)
                                  .ToList();
 
+                Log.Logger.Information($"Получены списки поставщиков для администраторов {user.Email}");
+
                 dbContext.Dispose();
             }
 
@@ -60,6 +66,8 @@ namespace TestApi.Controllers
             using (var dbContext = new SearchAndRangeContext())
             {
                 List<SupplierInList> suppliers = new List<SupplierInList>();
+
+                var user = dbContext.Users.Find(Guid.Parse(supplierListModel.UserId));
 
                 SuppliersList suppliersList =
                     dbContext
@@ -85,6 +93,8 @@ namespace TestApi.Controllers
                     dbContext.SuppliersLists.Add(suppliersList);
 
                     dbContext.SaveChanges();
+
+                    Log.Logger.Information($"Создан список поставщиков {supplierListModel.ListName} пользоватлем {user.Email}");
                 }
 
                 foreach (var id in supplierListModel.SupliersId)
@@ -104,6 +114,8 @@ namespace TestApi.Controllers
                         SupplierInList.SupplierListId = suppliersList.Id;
                 }
                 dbContext.SaveChanges(true);
+
+                Log.Logger.Information($"Поставщики добавлены в {supplierListModel.ListName} пользоватлем {user.Email}");
             }
 
             return Ok();

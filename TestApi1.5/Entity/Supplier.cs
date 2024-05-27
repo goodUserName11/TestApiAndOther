@@ -15,7 +15,7 @@ namespace TestApi.Entity
             string region, string kpp, string ogrn, double reputation,
             DateTime workSince, bool dishonesty, bool bankruptcyOrLiquidation, bool wayOfDistribution,
             bool smallBusinessEntity, bool isManufacturer, int minimumDeliveryDays, string conflict, 
-            int overallContracts, int succededContracts)
+            int overallContracts, int succededContracts, int goodReviewsCount, int badReviewsCount)
         {
             Inn = inn;
             Name = name;
@@ -36,19 +36,21 @@ namespace TestApi.Entity
             Conflict = conflict;
             OverallContracts = overallContracts;
             SuccededContracts = succededContracts;
+            GoodReviewsCount = goodReviewsCount;
+            BadReviewsCount = badReviewsCount;
         }
 
         [Key]
         public string Inn { get; set; }
         public string Name { get; set; }
-        public string Email { get; set; }
-        public string Phone { get; set; }
+        public string? Email { get; set; }
+        public string? Phone { get; set; }
         [Column("Contact_Id")]
         [ForeignKey("Contact")]
         public Guid ContactId { get; set; }
         public string Region { get; set; }
-        public string Kpp { get; set; }
-        public string Ogrn { get; set; }
+        public string? Kpp { get; set; }
+        public string? Ogrn { get; set; }
         [Column("Reputation")]
         public double Reputation { get; set; }
         [Column("Work_Since")]
@@ -64,9 +66,11 @@ namespace TestApi.Entity
         public bool IsManufacturer { get; set; }
         [Column("Minimum_Delivery_Days")]
         public int MinimumDeliveryDays { get; set; }
-        public string Conflict { get; set; }
+        public string? Conflict { get; set; }
         public int OverallContracts { get; set; }
         public int SuccededContracts { get; set; }
+        public int GoodReviewsCount { get; set; }
+        public int BadReviewsCount { get; set; }
 
         public Contact Contact { get; set; }
         [ForeignKey("SupplierId")]

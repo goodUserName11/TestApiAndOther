@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Serilog;
 using TestApi.Adapter;
 using TestApi.Data;
 using TestApi.Entity;
@@ -18,6 +19,8 @@ namespace TestApi.Controllers
         [HttpGet("Update")]
         public async Task<ActionResult> Update()
         {
+            Log.Logger.Information($"Обновление ОКПД2...");
+
             using (SearchAndRangeContext dbContext = new())
             {
                 dbContext.Okpd2s.RemoveRange(dbContext.Okpd2s);
@@ -28,6 +31,8 @@ namespace TestApi.Controllers
 
                 await dbContext.DisposeAsync();
             }
+
+            Log.Logger.Information($"ОКПД2 обновлены");
 
             return Ok();
         }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TestApi.Entity;
+using TestApi1._5.Entity;
 
 namespace TestApi.Data
 {
@@ -13,6 +14,8 @@ namespace TestApi.Data
         public DbSet<Supplier> Suppliers { get; set; }
         public DbSet<Contact> Contacts { get; set; }
         public DbSet<Product> Products { get; set; }
+        public DbSet<Prices> Prices { get; set; }
+        public DbSet<ProductPricesRow> productPricesRows { get; set; }
 
         public DbSet<SuppliersList> SuppliersLists { get; set; }
         public DbSet<SupplierInList> SupplierInLists { get; set; }
@@ -24,7 +27,8 @@ namespace TestApi.Data
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseSqlServer(
-                @"Data Source=wpl36.hosting.reg.ru;Initial Catalog=u1662870_Zakupki;Persist Security Info=True;User ID=u1662870_konstantin;Password=@x9Aw64e");
+                //@"Data Source=wpl36.hosting.reg.ru;Initial Catalog=u1662870_Zakupki;Persist Security Info=True;User ID=u1662870_konstantin;Password=@x9Aw64e");
+                "Data Source=DESKTOP-5KT6NVS\\SQLEXPRESS;Initial Catalog=ZakupkiLocal;Integrated Security=True");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -79,6 +83,12 @@ namespace TestApi.Data
             modelBuilder.Entity<Contact>()
                 .HasKey(b => b.Id)
                 .HasName("Id");
+
+            //Product
+            //modelBuilder.Entity<Product>().ToTable("Suppler_s_Products");
+
+            //ProductPricesView
+            modelBuilder.Entity<ProductPricesRow>().HasNoKey().ToView("ProductPricesView");
         }
     }
 }

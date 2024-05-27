@@ -11,7 +11,7 @@ namespace TestApi.Entity
 
         }
 
-        public Contact(Guid id, string name, string surname, string? patronimic, string phone1, string? phone2)
+        public Contact(Guid id, string? name, string? surname, string? patronimic, string? phone1, string? phone2)
         {
             Id = id;
             Name = name;
@@ -23,10 +23,10 @@ namespace TestApi.Entity
 
         [Key]
         public Guid Id { get; }
-        public string Name { get; set; }
-        public string Surname { get; set; }
+        public string? Name { get; set; }
+        public string? Surname { get; set; }
         public string? Patronimic { get; set; }
-        public string Phone1 { get; set; }
+        public string? Phone1 { get; set; }
         public string? Phone2 { get; set; }
     }
 }

@@ -30,6 +30,12 @@ namespace TestApi.Parser
 
             return resStr;
         }
+        
+        private class OkpdWithChildren{
+            public string Code;
+            public string Name;
+            public List<Okpd2> Childrens = new();
+        }
 
         private string getStringWithoutTag(string innerHtml)
         {
@@ -53,6 +59,7 @@ namespace TestApi.Parser
             requester.Headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36 Edg/100.0.1185.44";
 
             List<Okpd2> okpd2Elements = new List<Okpd2>();
+            List<OkpdWithChildren> okpdsWithChildren = new List<OkpdWithChildren>();
 
             using (var context = BrowsingContext.New(Configuration.Default.With(requester).WithDefaultLoader()))
             {
@@ -68,7 +75,13 @@ namespace TestApi.Parser
                 {
                     var okpdValues = item.QuerySelector("a").Text().Substring(7).Split(". ");
 
-                    okpd2Elements.Add(new Okpd2(okpdValues[0], okpdValues[1]));
+                    //okpd2Elements.Add(new Okpd2(okpdValues[0], okpdValues[1]));
+
+                    OkpdWithChildren okpdWithChildren = new()
+                    {
+                        Code = okpdValues[0],
+                        Name = okpdValues[1],
+                    };
 
                     var innerOkpdDoc = await ((IHtmlAnchorElement)item.QuerySelector("a")).NavigateAsync();
 
@@ -84,6 +97,9 @@ namespace TestApi.Parser
 
                         if (listItem.Count() < 2)
                             continue;
+
+                        //if (listItem.Length > 2)
+                        //    Console.WriteLine("hi");
 
                         if (listItem[0].FirstElementChild != null)
                             listItem[0].InnerHtml = listItem[0].FirstElementChild.InnerHtml;
@@ -111,13 +127,24 @@ namespace TestApi.Parser
                             okpdValue = listItem[1].InnerHtml;
                         }
 
+                        
+
                         if (okpdValue.Contains('"'))
                             okpdValue = okpdValue.Replace("\"", "");
 
-                        okpd2Elements.Add(new Okpd2(okpdKey, okpdValue));
+                        //okpd2Elements.Add(new Okpd2(okpdKey, okpdValue));
+
+                        okpdWithChildren.Childrens.Add(new Okpd2(okpdKey, okpdValue));
 
                         innerOkpdDoc.Dispose();
                     }
+
+                    okpdWithChildren.Childrens = okpdWithChildren.Childrens.OrderBy(c => c.Code).ToList();
+
+                    //okpdsWithChildren.Add(okpdWithChildren);
+
+                    okpd2Elements.Add(new Okpd2(okpdWithChildren.Code, okpdWithChildren.Name));
+                    okpd2Elements.AddRange(okpdWithChildren.Childrens);
                 }
 
                 okpd2Elements = okpd2Elements.DistinctBy(okpd => okpd.Code).ToList();
@@ -136,7 +163,12 @@ namespace TestApi.Parser
 
                         if (okpd2Elements[i].Code == "86.22.19.900" || okpd2Elements[i].Code == "86.23"
                                 || okpd2Elements[i].Code == "86.9" || okpd2Elements[i].Code == "96.02"
-                                || okpd2Elements[i].Code == "20.59.59.100" || okpd2Elements[i].Code == "31.09.91.115")
+                                || okpd2Elements[i].Code == "20.59.59.100" || okpd2Elements[i].Code == "31.09.91.115"
+                                || okpd2Elements[i].Code == "22.22.19.190"
+                                || okpd2Elements[i].Code == "22.22.9"
+                                || okpd2Elements[i].Code == "22.22.9"
+                                || okpd2Elements[i].Code == "22.23"
+                                || okpd2Elements[i].Code == "22.29")
                         {
                             if (okpd2Elements[i].Code == "96.02")
                                 okpd2Elements[i].Parent = "96.0";
@@ -152,6 +184,18 @@ namespace TestApi.Parser
 
                             else if (okpd2Elements[i].Code == "20.59.59.100")
                                 okpd2Elements[i].Parent = "20.59.59";
+
+                            else if (okpd2Elements[i].Code == "22.22.19.190")
+                                okpd2Elements[i].Parent = "22.22.19";
+
+                            else if (okpd2Elements[i].Code == "22.22.9")
+                                okpd2Elements[i].Parent = "22.22";
+
+                            else if (okpd2Elements[i].Code == "22.23")
+                                okpd2Elements[i].Parent = "22.2";
+
+                            else if (okpd2Elements[i].Code == "22.29")
+                                okpd2Elements[i].Parent = "22.2";
 
                             if (okpd2Elements[i].Code == "31.09.91.115")
                                 okpd2Elements[i].Parent = "31.09.91.110";

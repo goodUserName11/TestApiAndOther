@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 using TestApi.Data;
 using TestApi.Entity;
 using TestApi.Model;
@@ -31,6 +32,7 @@ namespace TestApi.Controllers
                     .Where(c => c.CompanyInn == user.CompanyInn)
                     .ToList();
 
+
                 await context.DisposeAsync();
             }
 
@@ -41,6 +43,10 @@ namespace TestApi.Controllers
             }
 
             coefficientValuesModel = coefficientValuesModel.OrderBy(c => c.Name).ToList();
+
+            Log.Logger.Information($"Получен список списков поставщиков {user.Email}");
+
+
 
             return Ok(coefficientValuesModel);
         }

@@ -76,7 +76,7 @@ namespace TestApi.Adapter
 
                                 if (dbSupplier == null) 
                                 {
-                                    double reputation = supplier.SuccededContracts / supplier.OverallContracts;
+                                    double reputation = (double)supplier.SuccededContracts / supplier.OverallContracts;
                                     bool dishonesty = 
                                         supplier.Dishonesty != null
                                         && supplier.Dishonesty.Value.AddYears(3) >= DateTime.Now;
@@ -90,12 +90,14 @@ namespace TestApi.Adapter
 
                                     dbContext.SaveChanges();
 
+                                    Random rand = new Random();
+
                                     dbContext.Suppliers.Add(
                                         new Supplier(supplier.Inn, supplier.Name, supplier.Email, supplier.Phone, newContact.Id, 
                                         supplier.Region, supplier.Kpp, supplier.Ogrn, reputation, supplier.WorkSince, dishonesty, 
                                         supplier.BankruptcyOrLiquidation, supplier.WayOfDistribution, supplier.SmallBusinessEntity, 
                                         supplier.IsManufacturer, supplier.MinimumDeliveryDays, supplier.Conflict,
-                                        supplier.OverallContracts, supplier.SuccededContracts));
+                                        supplier.OverallContracts, supplier.SuccededContracts, rand.Next(50), rand.Next(20)));
 
                                     dbContext.SaveChanges();
                                 }
@@ -106,9 +108,11 @@ namespace TestApi.Adapter
                                 var decimalPrice = decimal.Parse(supplier.Products[0].Price, style, provider);
 
                                 var newProduct = new Product(Guid.NewGuid(), product.Okpd2, supplier.Inn, decimalPrice,
-                                    supplier.Products[0].Count, supplier.Products[0].Name);
+                                    supplier.Products[0].Count, supplier.Products[0].Name, "шт.");
 
                                 dbContext.Products.Add(newProduct);
+
+                                dbContext.Prices.Add(new TestApi1._5.Entity.Prices(Guid.NewGuid(), newProduct.Id, DateTime.Now, newProduct.Price));
 
                                 await dbContext.SaveChangesAsync();
 
@@ -162,7 +166,7 @@ namespace TestApi.Adapter
 
                     foreach (var dbsupplier in dbsuppliers)
                     {
-                        var supplier = suppliers.Find(s => s.Inn == dbsupplier.Inn);
+                        var supplier = suppliers.Find(s => s.Inn == dbsupplier.Inn.TrimEnd());
                         if (supplier != null)
                         {
                             dbsupplier.Kpp = supplier.Kpp;
@@ -177,7 +181,7 @@ namespace TestApi.Adapter
                             dbsupplier.MinimumDeliveryDays = supplier.MinimumDeliveryDays;
                             dbsupplier.Name = supplier.Name;
                             dbsupplier.Ogrn = supplier.Ogrn;
-                            dbsupplier.Reputation = supplier.SuccededContracts / supplier.OverallContracts;
+                            dbsupplier.Reputation = (double)supplier.SuccededContracts / supplier.OverallContracts;
                             dbsupplier.Phone = supplier.Phone;
                             dbsupplier.Region = supplier.Region;
                             dbsupplier.WorkSince = supplier.WorkSince;
@@ -200,6 +204,8 @@ namespace TestApi.Adapter
                                     dbproduct.Price = decimal.Parse(product.Price, style, provider);
                                     dbproduct.Name = product.Name;
                                     dbproduct.Count = product.Count;
+
+                                    dbContext.Prices.Add(new TestApi1._5.Entity.Prices(Guid.NewGuid(), dbproduct.Id, DateTime.Now, dbproduct.Price));
                                 }
 
                             }

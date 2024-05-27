@@ -11,6 +11,7 @@ namespace TestApi.Model
 
         public SupplierProfileModel(SupplierInList supplier)
         {
+            Id = supplier.Id;
             Inn = supplier.Supplier.Inn;
             Name = supplier.Supplier.Name;
             Email = supplier.Supplier.Email;
@@ -44,6 +45,7 @@ namespace TestApi.Model
             ProductName = supplier.Product.Name;
         }
 
+        public Guid Id { get; set; }
         public string Inn { get; set; }
         public string Name { get; set; }
         public string Email { get; set; }

@@ -6,6 +6,7 @@ using System.Text;
 using TestApi.Authentication;
 using TestApi.Model;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace TestApi.Controllers
 {
@@ -50,6 +51,8 @@ namespace TestApi.Controllers
             if (user == null) 
                 return NotFound();
 
+            Log.Logger.Information($"Пользователь смотрит себя {user.Email}");
+
             return Ok(user);
         }
 
@@ -58,17 +61,22 @@ namespace TestApi.Controllers
         {
             using (SearchAndRangeContext context = new())
             {
-                Guid defaultRole = UserRoles.User.Id;
+                Guid role = UserRoles.User.Id;
 
                 List<Coefficient> coefficients;
 
                 if ((context.Users.FirstOrDefault(user => user.Email == requestUser.Email)) != null)
                     return BadRequest(new { ErrorMessage = "Такой пользователь уже существует" });
 
-                if ((await context.Companies.FindAsync(requestUser.CompanyInn)) is null)
+                var company = (await context.Companies.FindAsync(requestUser.CompanyInn));
+
+                if (company is null)
                 {
-                    context.Companies.Add(
-                        new UserCompany(requestUser.CompanyInn, requestUser.CompanyName, requestUser.CompanyAddress));
+                    role = UserRoles.Moderator.Id;
+
+                    company = new UserCompany(requestUser.CompanyInn, requestUser.CompanyName, requestUser.CompanyAddress);
+
+                    context.Companies.Add(company);
                     context.SaveChanges();
 
                     coefficients =
@@ -91,17 +99,21 @@ namespace TestApi.Controllers
                     context.SaveChanges();
                 }
 
+                if(context.Users.Count() == 0)
+                        role = UserRoles.Admin.Id;
 
                 var hashAlgorithm = MD5.Create();
                 var passwordHash = hashAlgorithm.ComputeHash(Encoding.UTF8.GetBytes(requestUser.Password));
 
                 var newUser = new User(passwordHash, requestUser.Name, 
                     requestUser.Surname, requestUser.Patronimic, requestUser.Email, 
-                    requestUser.Phone, defaultRole, requestUser.CompanyInn);
+                    requestUser.Phone, role, requestUser.CompanyInn);
 
                 context.Users.Add(newUser);
 
                 context.SaveChanges();
+
+                Log.Logger.Information($"Зарегистрирован пользователь {newUser.Email} компании {company.CompanyName}");
 
                 await context.DisposeAsync();
             }
@@ -127,6 +139,7 @@ namespace TestApi.Controllers
                 await context.DisposeAsync();
             }
 
+
             var hashAlgorithm = MD5.Create();
             var passwordHash = hashAlgorithm.ComputeHash(Encoding.UTF8.GetBytes(RequestUser.Password));
 
@@ -135,13 +148,14 @@ namespace TestApi.Controllers
 
             ApplicationUser appUser = new(dbUser.Id, role.Name, "Token");
 
+            Log.Logger.Information($"Вошел пользователь {dbUser.Email}");
+
             return Ok(appUser);
         }
 
         [HttpGet("logout")]
         public async Task<ActionResult> Logout()
         {
-            
             return Ok();
         }
 
@@ -151,7 +165,7 @@ namespace TestApi.Controllers
             User dbUser;
 
             if (string.IsNullOrEmpty(RequestUser.Id))
-                return BadRequest(new { errorMessage = "ошибка сервера?" });
+                return BadRequest(new { ErrorMessage = "ошибка сервера?" });
 
             using (SearchAndRangeContext context = new())
             {
@@ -171,6 +185,8 @@ namespace TestApi.Controllers
                 dbUser.Password = newPasswordHash;
 
                 await context.SaveChangesAsync();
+
+                Log.Logger.Information($"Изменен пароль для {dbUser.Email}");
 
                 await context.DisposeAsync();
             }
@@ -202,6 +218,8 @@ namespace TestApi.Controllers
 
                 await context.SaveChangesAsync();
 
+                Log.Logger.Information($"Изменены данные о пользователе {dbUser.Email}");
+
                 await context.DisposeAsync();
             }
 
@@ -229,7 +247,7 @@ namespace TestApi.Controllers
                 if(dbUser.Role != UserRoles.Moderator.Id && dbUser.Role != UserRoles.Admin.Id)
                     return Unauthorized(new { errorMessage = "Не авторизаван" });
 
-                if(dbUser.Role == UserRoles.Moderator.Id)
+                if (dbUser.Role == UserRoles.Moderator.Id)
                     users = context.Users
                         .Include(u => u.Company)
                         .Include(u => u.RoleRole)
@@ -237,12 +255,16 @@ namespace TestApi.Controllers
                         .Where(u => u.Id != dbUser.Id)
                         .ToList();
 
-                else if (dbUser.Role == UserRoles.Admin.Id)
+                else
+
+                if (dbUser.Role == UserRoles.Admin.Id)
                     users = context.Users
                         .Include(u => u.Company)
                         .Include(u => u.RoleRole)
                         .Where(u => u.Id != dbUser.Id)
-                        .ToList(); ;
+                        .ToList();
+
+                Log.Logger.Information($"Получен список пользотелей {dbUser.Email}");
 
                 await context.DisposeAsync();
             }
@@ -285,6 +307,8 @@ namespace TestApi.Controllers
 
 
                 await context.SaveChangesAsync();
+
+                Log.Logger.Information($"Изменена роль пользователя {changingUser.Email} пользователем {dbUser.Email}");
 
                 await context.DisposeAsync();
             }

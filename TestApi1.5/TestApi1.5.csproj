@@ -13,6 +13,15 @@
     <PackageReference Include="AngleSharp" Version="0.16.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.4" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.4" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />
+    <PackageReference Include="Serilog.AspNetCore" Version="5.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.3.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="DataGetter.Common">
+      <HintPath>..\..\goodUserName11\ParsersSolution\Common\bin\Debug\net6.0\DataGetter.Common.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>
